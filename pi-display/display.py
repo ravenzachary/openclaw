@@ -17,6 +17,7 @@ import argparse
 import json
 import os
 import random
+import re
 import subprocess
 import sys
 import time
@@ -117,6 +118,31 @@ def strip_inbound_metadata(text: str) -> str:
         result.append(line)
 
     return "\n".join(result).strip()
+
+
+# ---------------------------------------------------------------------------
+# Inline directive tag stripping (mirrors directive-tags.ts)
+# ---------------------------------------------------------------------------
+# The model may emit [[reply_to_current]], [[reply_to:<id>]], or
+# [[audio_as_voice]] tags. These are routing directives stripped before
+# delivery to WhatsApp and must not appear on the Pi display either.
+_DIRECTIVE_TAG_RE = re.compile(
+    r"\[\[\s*(?:reply_to_current|reply_to\s*:\s*[^\]\n]+|audio_as_voice)\s*\]\]",
+    re.IGNORECASE,
+)
+
+
+def strip_directive_tags(text: str) -> str:
+    """Remove inline directive tags and collapse resulting whitespace."""
+    if not text or "[[" not in text:
+        return text
+    cleaned = _DIRECTIVE_TAG_RE.sub("", text)
+    # Collapse runs of spaces and trim.
+    cleaned = re.sub(r"[ \t]+", " ", cleaned)
+    cleaned = re.sub(r"[ \t]*\n[ \t]*", "\n", cleaned)
+    return cleaned.strip()
+
+
 AVATAR_PATH = SCRIPT_DIR / "avatar.png"
 
 
@@ -347,7 +373,7 @@ def read_last_message(session_path: Path) -> dict | None:
                 else:
                     continue
 
-                text = text.strip()
+                text = strip_directive_tags(text.strip())
                 if not text:
                     continue
 
