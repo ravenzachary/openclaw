@@ -1,0 +1,38 @@
+{
+  "id": "api-spend",
+  "name": "API Spend Dashboard",
+  "description": "Track API billing across configured providers (OpenAI, OpenRouter). Serves a dashboard at /plugins/api-spend/ and a /spend chat command.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "cacheTtlMs": {
+        "type": "number"
+      },
+      "openaiApiKey": {
+        "type": "string"
+      },
+      "openrouterApiKey": {
+        "type": "string"
+      }
+    }
+  },
+  "uiHints": {
+    "cacheTtlMs": {
+      "label": "Cache TTL (ms)",
+      "help": "How long to cache billing API responses. Default: 300000 (5 minutes)."
+    },
+    "openaiApiKey": {
+      "label": "OpenAI API Key Override",
+      "help": "Override the OpenAI API key used for billing lookups. Falls back to provider config or OPENAI_API_KEY env var.",
+      "sensitive": true,
+      "advanced": true
+    },
+    "openrouterApiKey": {
+      "label": "OpenRouter API Key Override",
+      "help": "Override the OpenRouter API key used for billing lookups. Falls back to provider config or OPENROUTER_API_KEY env var.",
+      "sensitive": true,
+      "advanced": true
+    }
+  }
+}
